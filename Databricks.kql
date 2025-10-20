@@ -1,0 +1,326 @@
+Resources
+| where type =~ 'microsoft.databricks/workspaces'
+| extend 
+    // ============================================
+    // BASIC INFORMATION
+    // ============================================
+    workspaceName = name,
+    workspaceId = id,
+    resourceGroup = resourceGroup,
+    location = location,
+    subscriptionId = subscriptionId,
+    kind = kind,
+    
+    // ============================================
+    // SKU INFORMATION
+    // ============================================
+    skuName = sku.name,
+    skuTier = sku.tier,
+    skuCapacity = sku.capacity,
+    
+    // ============================================
+    // WORKSPACE CORE PROPERTIES
+    // ============================================
+    workspaceUrl = properties.workspaceUrl,
+    workspaceResourceId = properties.workspaceId,
+    managedResourceGroupId = properties.managedResourceGroupId,
+    provisioningState = properties.provisioningState,
+    
+    // ============================================
+    // PARAMETERS - PRICING & TIER
+    // ============================================
+    pricingTier = properties.parameters.pricingTier.value,
+    
+    // ============================================
+    // PARAMETERS - NETWORKING (VNet Injection)
+    // ============================================
+    customVirtualNetworkId = properties.parameters.customVirtualNetworkId.value,
+    customPublicSubnetName = properties.parameters.customPublicSubnetName.value,
+    customPrivateSubnetName = properties.parameters.customPrivateSubnetName.value,
+    vnetAddressPrefix = properties.parameters.vnetAddressPrefix.value,
+    
+    // ============================================
+    // PARAMETERS - NETWORK SECURITY
+    // ============================================
+    enableNoPublicIp = properties.parameters.enableNoPublicIp.value,
+    publicNetworkAccess = properties.publicNetworkAccess,
+    requiredNsgRules = properties.parameters.requiredNsgRules.value,
+    
+    // ============================================
+    // PARAMETERS - ENCRYPTION
+    // ============================================
+    requireInfrastructureEncryption = properties.parameters.requireInfrastructureEncryption.value,
+    prepareEncryption = properties.parameters.prepareEncryption.value,
+    diskEncryptionSetId = properties.parameters.diskEncryptionSetId.value,
+    
+    // Encryption at Host
+    encryptionAtHost = properties.encryption.entities.managedServices.keySource,
+    
+    // ============================================
+    // PARAMETERS - STORAGE CONFIGURATION
+    // ============================================
+    storageAccountName = properties.parameters.storageAccountName.value,
+    storageAccountSkuName = properties.parameters.storageAccountSkuName.value,
+    storageAccountIdentity = properties.storageAccountIdentity,
+    
+    // ============================================
+    // PARAMETERS - LOAD BALANCER
+    // ============================================
+    loadBalancerId = properties.parameters.loadBalancerId.value,
+    loadBalancerBackendPoolName = properties.parameters.loadBalancerBackendPoolName.value,
+    relayNamespaceName = properties.parameters.relayNamespaceName.value,
+    
+    // ============================================
+    // PARAMETERS - NAT GATEWAY
+    // ============================================
+    natGatewayName = properties.parameters.natGatewayName.value,
+    publicIpName = properties.parameters.publicIpName.value,
+    
+    // ============================================
+    // PARAMETERS - SECURITY & COMPLIANCE
+    // ============================================
+    enableEnhancedSecurityMonitoring = properties.parameters.enableEnhancedSecurityMonitoring.value,
+    complianceSecurityProfile = properties.parameters.complianceSecurityProfile.value,
+    complianceSecurityProfileValue = properties.parameters.complianceSecurityProfile.value.complianceStandards,
+    
+    // ============================================
+    // PARAMETERS - AUTO CONFIGURATION
+    // ============================================
+    autoTerminationMinutes = properties.parameters.autoTerminationMinutes.value,
+    automaticClusterUpdate = properties.parameters.automaticClusterUpdate.value,
+    
+    // ============================================
+    // PARAMETERS - RESOURCE TAGS
+    // ============================================
+    resourceTags = properties.parameters.resourceTags.value,
+    
+    // ============================================
+    // PARAMETERS - CUSTOM PARAMETERS
+    // ============================================
+    customPrivateSubnetNetworkSecurityGroupId = properties.parameters.customPrivateSubnetNetworkSecurityGroupId.value,
+    customPublicSubnetNetworkSecurityGroupId = properties.parameters.customPublicSubnetNetworkSecurityGroupId.value,
+    
+    // ============================================
+    // PRIVATE ENDPOINTS
+    // ============================================
+    privateEndpointConnections = properties.privateEndpointConnections,
+    privateEndpointConnectionsCount = array_length(properties.privateEndpointConnections),
+    
+    // ============================================
+    // MANAGED IDENTITY
+    // ============================================
+    identityType = identity.type,
+    identityPrincipalId = identity.principalId,
+    identityTenantId = identity.tenantId,
+    userAssignedIdentities = identity.userAssignedIdentities,
+    
+    // Managed Disk Identity
+    managedDiskIdentityType = properties.managedDiskIdentity.type,
+    managedDiskIdentityPrincipalId = properties.managedDiskIdentity.principalId,
+    managedDiskIdentityTenantId = properties.managedDiskIdentity.tenantId,
+    
+    // ============================================
+    // ACCESS CONNECTOR (Unity Catalog)
+    // ============================================
+    accessConnectorId = properties.accessConnector.id,
+    accessConnectorIdentityType = properties.accessConnector.identityType,
+    accessConnectorUserAssignedIdentityId = properties.accessConnector.userAssignedIdentityId,
+    
+    // ============================================
+    // AUTHORIZATIONS
+    // ============================================
+    authorizations = properties.authorizations,
+    
+    // ============================================
+    // WORKSPACE FEATURES
+    // ============================================
+    workspaceFeatures = properties.workspaceFeatures,
+    
+    // ============================================
+    // DEFAULT CATALOG (Unity Catalog)
+    // ============================================
+    defaultCatalog = properties.defaultCatalog,
+    defaultCatalogInitialName = properties.defaultCatalog.initialName,
+    defaultCatalogInitialType = properties.defaultCatalog.initialType,
+    
+    // ============================================
+    // MANAGED SERVICES ENCRYPTION
+    // ============================================
+    encryptionKeySource = properties.encryption.entities.managedServices.keySource,
+    encryptionKeyVaultUri = properties.encryption.entities.managedServices.keyVaultProperties.keyVaultUri,
+    encryptionKeyName = properties.encryption.entities.managedServices.keyVaultProperties.keyName,
+    encryptionKeyVersion = properties.encryption.entities.managedServices.keyVaultProperties.keyVersion,
+    
+    // Managed Disk Encryption
+    managedDiskKeySource = properties.encryption.entities.managedDisk.keySource,
+    managedDiskKeyVaultUri = properties.encryption.entities.managedDisk.keyVaultProperties.keyVaultUri,
+    managedDiskKeyName = properties.encryption.entities.managedDisk.keyVaultProperties.keyName,
+    managedDiskKeyVersion = properties.encryption.entities.managedDisk.keyVaultProperties.keyVersion,
+    managedDiskAutoRotation = properties.encryption.entities.managedDisk.keyVaultProperties.autoRotation,
+    
+    // ============================================
+    // DATABRICKS RUNTIME CONFIGURATION
+    // ============================================
+    updateWorkspaceProperties = properties.updateWorkspaceProperties,
+    
+    // ============================================
+    // CREATOR & MODIFIER INFORMATION
+    // ============================================
+    createdBy = properties.createdBy,
+    updatedBy = properties.updatedBy,
+    createdDateTime = properties.createdDateTime,
+    
+    // ============================================
+    // SYSTEM METADATA
+    // ============================================
+    systemDataCreatedBy = systemData.createdBy,
+    systemDataCreatedByType = systemData.createdByType,
+    systemDataCreatedAt = systemData.createdAt,
+    systemDataLastModifiedBy = systemData.lastModifiedBy,
+    systemDataLastModifiedByType = systemData.lastModifiedByType,
+    systemDataLastModifiedAt = systemData.lastModifiedAt,
+    
+    // ============================================
+    // TAGS
+    // ============================================
+    tags = tags,
+    
+    // ============================================
+    // DERIVED/CALCULATED FIELDS
+    // ============================================
+    isVNetInjected = isnotnull(properties.parameters.customVirtualNetworkId.value),
+    hasPrivateEndpoints = array_length(properties.privateEndpointConnections) > 0,
+    hasManagedIdentity = isnotnull(identity.type),
+    hasDiskEncryption = isnotnull(properties.parameters.diskEncryptionSetId.value),
+    hasAccessConnector = isnotnull(properties.accessConnector.id),
+    isPremiumTier = sku.name =~ 'premium',
+    isStandardTier = sku.name =~ 'standard',
+    isTrialTier = sku.name =~ 'trial',
+    hasCustomerManagedKey = properties.encryption.entities.managedServices.keySource =~ 'Microsoft.Keyvault',
+    publicIpDisabled = properties.parameters.enableNoPublicIp.value =~ 'true',
+    isPublicNetworkAccessEnabled = properties.publicNetworkAccess =~ 'Enabled',
+    hasEnhancedSecurity = properties.parameters.enableEnhancedSecurityMonitoring.value =~ 'true'
+| project 
+    // Basic Info
+    workspaceName,
+    workspaceId,
+    resourceGroup,
+    location,
+    subscriptionId,
+    kind,
+    
+    // SKU
+    skuName,
+    skuTier,
+    skuCapacity,
+    isPremiumTier,
+    isStandardTier,
+    isTrialTier,
+    
+    // Workspace Core
+    workspaceUrl,
+    workspaceResourceId,
+    managedResourceGroupId,
+    provisioningState,
+    pricingTier,
+    
+    // Networking - VNet
+    customVirtualNetworkId,
+    customPublicSubnetName,
+    customPrivateSubnetName,
+    vnetAddressPrefix,
+    isVNetInjected,
+    customPrivateSubnetNetworkSecurityGroupId,
+    customPublicSubnetNetworkSecurityGroupId,
+    
+    // Networking - Security
+    enableNoPublicIp,
+    publicIpDisabled,
+    publicNetworkAccess,
+    isPublicNetworkAccessEnabled,
+    requiredNsgRules,
+    
+    // Networking - Load Balancer & NAT
+    loadBalancerId,
+    loadBalancerBackendPoolName,
+    relayNamespaceName,
+    natGatewayName,
+    publicIpName,
+    
+    // Private Endpoints
+    privateEndpointConnections,
+    privateEndpointConnectionsCount,
+    hasPrivateEndpoints,
+    
+    // Encryption
+    requireInfrastructureEncryption,
+    prepareEncryption,
+    diskEncryptionSetId,
+    hasDiskEncryption,
+    encryptionKeySource,
+    hasCustomerManagedKey,
+    encryptionKeyVaultUri,
+    encryptionKeyName,
+    encryptionKeyVersion,
+    managedDiskKeySource,
+    managedDiskKeyVaultUri,
+    managedDiskKeyName,
+    managedDiskKeyVersion,
+    managedDiskAutoRotation,
+    encryptionAtHost,
+    
+    // Storage
+    storageAccountName,
+    storageAccountSkuName,
+    storageAccountIdentity,
+    
+    // Security & Compliance
+    enableEnhancedSecurityMonitoring,
+    hasEnhancedSecurity,
+    complianceSecurityProfile,
+    complianceSecurityProfileValue,
+    
+    // Auto Configuration
+    autoTerminationMinutes,
+    automaticClusterUpdate,
+    
+    // Identity
+    identityType,
+    identityPrincipalId,
+    identityTenantId,
+    userAssignedIdentities,
+    hasManagedIdentity,
+    managedDiskIdentityType,
+    managedDiskIdentityPrincipalId,
+    managedDiskIdentityTenantId,
+    
+    // Access Connector (Unity Catalog)
+    accessConnectorId,
+    hasAccessConnector,
+    accessConnectorIdentityType,
+    accessConnectorUserAssignedIdentityId,
+    
+    // Unity Catalog
+    defaultCatalog,
+    defaultCatalogInitialName,
+    defaultCatalogInitialType,
+    
+    // Authorizations & Features
+    authorizations,
+    workspaceFeatures,
+    updateWorkspaceProperties,
+    
+    // Metadata
+    createdBy,
+    updatedBy,
+    createdDateTime,
+    systemDataCreatedBy,
+    systemDataCreatedByType,
+    systemDataCreatedAt,
+    systemDataLastModifiedBy,
+    systemDataLastModifiedByType,
+    systemDataLastModifiedAt,
+    
+    // Tags & Custom
+    tags,
+    resourceTags
