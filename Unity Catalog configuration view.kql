@@ -1,0 +1,38 @@
+Resources
+| where type =~ 'microsoft.databricks/workspaces'
+| where isnotnull(properties.accessConnector.id) or isnotnull(properties.defaultCatalog)
+| extend 
+    workspaceName = name,
+    resourceGroup = resourceGroup,
+    location = location,
+    workspaceUrl = properties.workspaceUrl,
+    
+    // Unity Catalog - Access Connector
+    accessConnectorId = properties.accessConnector.id,
+    accessConnectorName = tostring(split(properties.accessConnector.id, '/')[-1]),
+    accessConnectorIdentityType = properties.accessConnector.identityType,
+    accessConnectorUserAssignedIdentityId = properties.accessConnector.userAssignedIdentityId,
+    
+    // Unity Catalog - Default Catalog
+    defaultCatalogName = properties.defaultCatalog.initialName,
+    defaultCatalogType = properties.defaultCatalog.initialType,
+    
+    // Storage Account for Unity Catalog
+    storageAccountIdentityType = properties.storageAccountIdentity.type,
+    storageAccountIdentityPrincipalId = properties.storageAccountIdentity.principalId,
+    
+    tags = tags
+| project 
+    workspaceName,
+    resourceGroup,
+    location,
+    workspaceUrl,
+    accessConnectorId,
+    accessConnectorName,
+    accessConnectorIdentityType,
+    accessConnectorUserAssignedIdentityId,
+    defaultCatalogName,
+    defaultCatalogType,
+    storageAccountIdentityType,
+    storageAccountIdentityPrincipalId,
+    tags
