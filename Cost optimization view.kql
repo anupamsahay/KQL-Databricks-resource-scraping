@@ -1,0 +1,47 @@
+Resources
+| where type =~ 'microsoft.databricks/workspaces'
+| extend 
+    workspaceName = name,
+    resourceGroup = resourceGroup,
+    location = location,
+    
+    // Pricing Info
+    skuName = sku.name,
+    pricingTier = properties.parameters.pricingTier.value,
+    
+    // Auto-termination (Cost Saving)
+    autoTerminationMinutes = properties.parameters.autoTerminationMinutes.value,
+    hasAutoTermination = isnotnull(properties.parameters.autoTerminationMinutes.value),
+    
+    // Cluster Update Policy
+    automaticClusterUpdate = properties.parameters.automaticClusterUpdate.value,
+    
+    // Spot Instances enablement potential
+    publicIpDisabled = properties.parameters.enableNoPublicIp.value =~ 'true',
+    
+    // Creation Date for age analysis
+    createdDateTime = properties.createdDateTime,
+    ageInDays = datetime_diff('day', now(), todatetime(properties.createdDateTime)),
+    
+    tags = tags
+| extend 
+    costOptimizationScore = 
+        toint(isnotnull(properties.parameters.autoTerminationMinutes.value)) * 40 +
+        toint(sku.name =~ 'standard') * 30 +
+        toint(properties.parameters.enableNoPublicIp.value =~ 'true') * 20 +
+        toint(isnotnull(tags['Environment']) and tags['Environment'] =~ 'Dev') * 10
+| project 
+    workspaceName,
+    resourceGroup,
+    location,
+    skuName,
+    pricingTier,
+    costOptimizationScore,
+    autoTerminationMinutes,
+    hasAutoTermination,
+    automaticClusterUpdate,
+    publicIpDisabled,
+    createdDateTime,
+    ageInDays,
+    tags
+| order by costOptimizationScore asc
