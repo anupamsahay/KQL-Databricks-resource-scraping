@@ -1,0 +1,76 @@
+Resources
+| where type =~ 'microsoft.databricks/workspaces'
+| extend 
+    workspaceName = name,
+    resourceGroup = resourceGroup,
+    location = location,
+    
+    // Security Posture
+    publicNetworkAccess = properties.publicNetworkAccess,
+    enableNoPublicIp = properties.parameters.enableNoPublicIp.value,
+    isVNetInjected = isnotnull(properties.parameters.customVirtualNetworkId.value),
+    hasPrivateEndpoints = array_length(properties.privateEndpointConnections) > 0,
+    
+    // Encryption Status
+    requireInfrastructureEncryption = properties.parameters.requireInfrastructureEncryption.value,
+    hasDiskEncryption = isnotnull(properties.parameters.diskEncryptionSetId.value),
+    diskEncryptionSetId = properties.parameters.diskEncryptionSetId.value,
+    encryptionKeySource = properties.encryption.entities.managedServices.keySource,
+    hasCustomerManagedKey = properties.encryption.entities.managedServices.keySource =~ 'Microsoft.Keyvault',
+    
+    // Compliance
+    enableEnhancedSecurityMonitoring = properties.parameters.enableEnhancedSecurityMonitoring.value,
+    complianceStandards = properties.parameters.complianceSecurityProfile.value.complianceStandards,
+    
+    // Identity
+    identityType = identity.type,
+    hasManagedIdentity = isnotnull(identity.type),
+    
+    // Network Security
+    customPrivateSubnetNSG = properties.parameters.customPrivateSubnetNetworkSecurityGroupId.value,
+    customPublicSubnetNSG = properties.parameters.customPublicSubnetNetworkSecurityGroupId.value,
+    requiredNsgRules = properties.parameters.requiredNsgRules.value,
+    
+    // Security Score Calculation (Custom)
+    securityScore = 
+        toint(properties.publicNetworkAccess =~ 'Disabled') * 20 +
+        toint(properties.parameters.enableNoPublicIp.value =~ 'true') * 15 +
+        toint(isnotnull(properties.parameters.customVirtualNetworkId.value)) * 15 +
+        toint(array_length(properties.privateEndpointConnections) > 0) * 20 +
+        toint(isnotnull(properties.parameters.diskEncryptionSetId.value)) * 15 +
+        toint(properties.encryption.entities.managedServices.keySource =~ 'Microsoft.Keyvault') * 10 +
+        toint(properties.parameters.enableEnhancedSecurityMonitoring.value =~ 'true') * 5,
+    
+    tags = tags
+| extend 
+    securityLevel = case(
+        securityScore >= 80, 'Excellent',
+        securityScore >= 60, 'Good',
+        securityScore >= 40, 'Fair',
+        securityScore >= 20, 'Poor',
+        'Critical'
+    )
+| project 
+    workspaceName,
+    resourceGroup,
+    location,
+    securityScore,
+    securityLevel,
+    publicNetworkAccess,
+    enableNoPublicIp,
+    isVNetInjected,
+    hasPrivateEndpoints,
+    requireInfrastructureEncryption,
+    hasDiskEncryption,
+    diskEncryptionSetId,
+    hasCustomerManagedKey,
+    encryptionKeySource,
+    enableEnhancedSecurityMonitoring,
+    complianceStandards,
+    identityType,
+    hasManagedIdentity,
+    customPrivateSubnetNSG,
+    customPublicSubnetNSG,
+    requiredNsgRules,
+    tags
+| order by securityScore desc
