@@ -1,0 +1,36 @@
+Resources
+| where type =~ 'microsoft.databricks/workspaces'
+| mv-expand privateEndpoint = properties.privateEndpointConnections
+| extend 
+    workspaceName = name,
+    resourceGroup = resourceGroup,
+    location = location,
+    workspaceUrl = properties.workspaceUrl,
+    
+    // Private Endpoint Details
+    privateEndpointId = privateEndpoint.id,
+    privateEndpointName = tostring(split(privateEndpoint.id, '/')[-1]),
+    privateEndpointType = privateEndpoint.type,
+    privateEndpointConnectionId = privateEndpoint.properties.privateEndpoint.id,
+    privateEndpointConnectionState = privateEndpoint.properties.privateLinkServiceConnectionState.status,
+    privateEndpointConnectionDescription = privateEndpoint.properties.privateLinkServiceConnectionState.description,
+    privateEndpointConnectionActionsRequired = privateEndpoint.properties.privateLinkServiceConnectionState.actionsRequired,
+    privateEndpointProvisioningState = privateEndpoint.properties.provisioningState,
+    privateEndpointGroupIds = privateEndpoint.properties.groupIds,
+    
+    tags = tags
+| project 
+    workspaceName,
+    resourceGroup,
+    location,
+    workspaceUrl,
+    privateEndpointId,
+    privateEndpointName,
+    privateEndpointType,
+    privateEndpointConnectionId,
+    privateEndpointConnectionState,
+    privateEndpointConnectionDescription,
+    privateEndpointConnectionActionsRequired,
+    privateEndpointProvisioningState,
+    privateEndpointGroupIds,
+    tags
